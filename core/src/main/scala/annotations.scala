@@ -1,4 +1,4 @@
-package com.github.philcali.argonaut;
+package com.github.philcali.argonaut
 
 import annotation.StaticAnnotation
 

@@ -6,10 +6,11 @@ abstract class ReflectiveArgs[T: universe.TypeTag] extends ParserDefinition {
   type Mapper = T
 
   val instanceMirror: universe.InstanceMirror
+  val tagOverrides: Map[String, Tag => Tag]
+  val callbackOverrides: Map[String, String => Any] = Map[String, String => Any]()
 
   val mirror = universe.runtimeMirror(getClass.getClassLoader)
   val theType = universe.typeOf[Mapper]
-  val tagOverrides: Map[String, Tag => Tag]
 
   def createTag(tag: Tag) = tagOverrides.get(tag.long).map(_.apply(tag)).getOrElse(tag)
 
@@ -56,7 +57,10 @@ abstract class ReflectiveArgs[T: universe.TypeTag] extends ParserDefinition {
               if (x =:= universe.definitions.IntTpe) arg.toInt
               else if (x =:= universe.definitions.DoubleTpe) arg.toDouble
               else if (x =:= universe.definitions.LongTpe) arg.toLong
-              else arg
+              else callbackOverrides
+                .get(name)
+                .map(_.apply(arg))
+                .getOrElse(arg)
             )
           )
           case (x, None) => x
